@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#141d2e"/><stop offset="1" stop-color="#0b111b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <g stroke="#243049" stroke-width="1">
+    <path d="M0 157.5H1200M0 315H1200M0 472.5H1200M300 0V630M600 0V630M900 0V630"/>
+  </g>
+  <rect x="86" y="128" width="86" height="66" rx="14" fill="none" stroke="#5b3df5" stroke-width="9"/>
+  <rect x="104" y="150" width="50" height="11" rx="5.5" fill="#5b3df5"/>
+  <text x="86" y="330" fill="#ffffff" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="104" font-weight="700" letter-spacing="-4">OGScope</text>
+  <text x="86" y="404" fill="#98a4b8" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="40" font-weight="400">See your link before anyone else does.</text>
+  <text x="86" y="520" fill="#5b3df5" font-family="IBM Plex Mono, monospace" font-size="27">og:image  twitter:card  theme-color</text>
+</svg>

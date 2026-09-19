@@ -1,0 +1,10 @@
+# OGScope
+
+User-agent: *
+Allow: /
+
+# Scan results are generated per request and hold no unique content worth
+# indexing. The guides and the home page are the pages we want crawled.
+Disallow: /api/
+
+Sitemap: https://ogscope.app/sitemap.xml

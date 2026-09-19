@@ -1,0 +1,101 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path only, e.g. "/fix/linkedin". Used for canonical and og:url. */
+  path?: string;
+  ogTitle?: string;
+}
+
+const { title, description, path = '/', ogTitle } = Astro.props;
+const site = Astro.site ?? new URL('https://ogscope.app');
+const canonical = new URL(path, site).toString();
+const ogImage = new URL(`/api/og?title=${encodeURIComponent(ogTitle ?? title)}`, site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {/* Our own card has to be flawless. This is the first URL anyone will scan. */}
+    <meta property="og:site_name" content="OGScope" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={ogTitle ?? title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle ?? title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="theme-color" content="#5b3df5" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="wrap masthead-inner">
+        <a class="logo" href="/">
+          <span class="logo-mark" aria-hidden="true"></span>
+          OGScope
+        </a>
+        <nav class="nav">
+          <a class="nav-hide" href="/#how">How it works</a>
+          <a href="/fix/linkedin">Guides</a>
+          <a href="/pricing">Pricing</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-grid">
+        <div>
+          <a class="logo" href="/" style="margin-bottom:10px">
+            <span class="logo-mark" aria-hidden="true"></span>
+            OGScope
+          </a>
+          <p style="max-width:32ch">
+            Check how a link looks on every platform before you post it.
+          </p>
+        </div>
+        <div>
+          <h4>Fix a platform</h4>
+          <ul>
+            <li><a href="/fix/x">X cards</a></li>
+            <li><a href="/fix/linkedin">LinkedIn previews</a></li>
+            <li><a href="/fix/whatsapp">WhatsApp previews</a></li>
+            <li><a href="/fix/slack">Slack unfurls</a></li>
+            <li><a href="/fix/discord">Discord embeds</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <ul>
+            <li><a href="/">Preview checker</a></li>
+            <li><a href="/pricing">Pricing</a></li>
+            <li><a href="/bot">About our crawler</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

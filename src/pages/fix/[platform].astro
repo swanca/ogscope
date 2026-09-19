@@ -1,0 +1,494 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/cards.css';
+import { PLATFORMS, getPlatform } from '../../lib/platforms';
+import { GUIDES } from '../../lib/guides';
+import { renderCard, type CardData } from '../../lib/card';
+
+export function getStaticPaths() {
+  return PLATFORMS.map((p) => ({ params: { platform: p.id } }));
+}
+
+const { platform: id } = Astro.params;
+const platform = getPlatform(id!)!;
+const guide = GUIDES[platform.id]!;
+const others = PLATFORMS.filter((p) => p.id !== platform.id);
+
+const { recommended, minimum, aspectRatio, maxBytes, formats } = platform.image;
+const maxSize = maxBytes >= 1024 * 1024 ? `${Math.round(maxBytes / 1024 / 1024)}MB` : `${Math.round(maxBytes / 1024)}KB`;
+
+// A working head block for this platform specifically, not a generic dump of
+// every tag that exists.
+const snippet = [
+  '<meta property="og:title" content="Your page title">',
+  '<meta property="og:description" content="A short summary of the page.">',
+  `<meta property="og:image" content="https://yoursite.com/og-image.png">`,
+  '<meta property="og:url" content="https://yoursite.com/page">',
+  '<meta property="og:site_name" content="Your Site">',
+  '<meta property="og:type" content="website">',
+  ...(platform.id === 'x' || platform.id === 'discord'
+    ? ['<meta name="twitter:card" content="summary_large_image">']
+    : []),
+  ...(platform.id === 'slack' || platform.id === 'discord'
+    ? ['<meta name="theme-color" content="#5b3df5">']
+    : []),
+].join('\n');
+
+const example: CardData = {
+  title: 'Your page title, shown the way ' + platform.name + ' shows it',
+  description:
+    'This is roughly how much of your description survives. Everything past the limit is replaced with an ellipsis.',
+  image: '/demo-card.svg',
+  siteName: 'Your Site',
+  domain: 'yoursite.com',
+  themeColor: '#5b3df5',
+  cardType: 'summary_large_image',
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: guide.faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const title = `${platform.name} link preview: image size, tags and fixes`;
+const description = `The exact tags ${platform.name} reads, the ${recommended.width}x${recommended.height} image it wants, and how to fix a preview that will not update.`;
+---
+
+<Base title={title} description={description} path={`/fix/${platform.id}`}>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <article class="guide" style={`--pc:${platform.brandColor}`}>
+    <div class="wrap">
+      <p class="eyebrow"><a href="/">OGScope</a> / {platform.name}</p>
+      <h1>{title}</h1>
+      <p class="lede">{guide.intro}</p>
+
+      <form class="inline-scan" data-scan>
+        <label class="visually-hidden" for="u">Your URL</label>
+        <input id="u" name="url" type="text" placeholder="yoursite.com/page" spellcheck="false" />
+        <button class="btn" type="submit">Check my link</button>
+      </form>
+    </div>
+
+    <div class="wrap guide-grid">
+      <div class="guide-main">
+        <section>
+          <h2>The tags {platform.name} reads</h2>
+          <p class="note">
+            In priority order. The first one present on your page is the one it uses, and the rest are
+            ignored.
+          </p>
+          <table class="spec">
+            <tbody>
+              <tr>
+                <th>Title</th>
+                <td>{platform.titleTags.map((t) => <span class="tag">{t}</span>)}</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td>{platform.descriptionTags.map((t) => <span class="tag">{t}</span>)}</td>
+              </tr>
+              <tr>
+                <th>Image</th>
+                <td>{platform.imageTags.map((t) => <span class="tag">{t}</span>)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Image requirements</h2>
+          <table class="spec">
+            <tbody>
+              <tr><th>Recommended</th><td>{recommended.width} x {recommended.height} px</td></tr>
+              <tr><th>Minimum</th><td>{minimum.width} x {minimum.height} px</td></tr>
+              <tr><th>Aspect ratio</th><td>{aspectRatio}</td></tr>
+              <tr><th>Max file size</th><td>{maxSize}</td></tr>
+              <tr><th>Formats</th><td>{formats.join(', ')}</td></tr>
+              <tr><th>Title cuts at</th><td>{platform.titleLimit} characters</td></tr>
+              <tr><th>Description cuts at</th><td>{platform.descriptionLimit} characters</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Paste this into your head</h2>
+          <p class="note">Replace the values and you have a working card on {platform.name}.</p>
+          <div class="snippet">
+            <pre><code>{snippet}</code></pre>
+            <button class="copy" type="button" data-copy={snippet}>Copy</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Things that catch people out</h2>
+          <ul class="gotchas">
+            {platform.gotchas.map((g) => <li set:html={g.replace(/`([^`]+)`/g, '<span class="tag">$1</span>')} />)}
+          </ul>
+        </section>
+
+        <section>
+          <h2>{guide.refreshTitle}</h2>
+          <ol class="steps">
+            {guide.refreshSteps.map((s) => <li>{s}</li>)}
+          </ol>
+          <p class="callout">{guide.refreshNote}</p>
+        </section>
+
+        <section>
+          <h2>Common questions</h2>
+          <div class="faqs">
+            {
+              guide.faqs.map((f) => (
+                <details>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))
+            }
+          </div>
+        </section>
+      </div>
+
+      <aside class="guide-side">
+        <div class="side-card">
+          <p class="eyebrow">How it renders</p>
+          <Fragment set:html={renderCard(platform, example)} />
+        </div>
+        <div class="side-card">
+          <p class="eyebrow">Other platforms</p>
+          <ul class="other-list">
+            {
+              others.map((p) => (
+                <li>
+                  <a href={`/fix/${p.id}`} style={`--pc:${p.brandColor}`}>
+                    <span class="dot" />
+                    {p.name}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .guide {
+    padding: 48px 0 0;
+  }
+
+  .guide .eyebrow a {
+    text-decoration: none;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    max-width: 20ch;
+    margin: 12px 0 16px;
+  }
+
+  .lede {
+    font-size: var(--step-1);
+    color: var(--muted);
+    max-width: 62ch;
+    line-height: 1.55;
+  }
+
+  .inline-scan {
+    display: flex;
+    gap: 10px;
+    margin: 28px 0 8px;
+    max-width: 520px;
+  }
+
+  .inline-scan input {
+    flex: 1;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    background: var(--panel);
+    padding: 0 12px;
+    height: 44px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    min-width: 0;
+  }
+
+  .guide-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 56px;
+    margin-top: 48px;
+    align-items: start;
+  }
+
+  .guide-main section {
+    padding-top: 40px;
+  }
+
+  .guide-main h2 {
+    font-size: var(--step-2);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--pc);
+    display: inline-block;
+  }
+
+  .note {
+    color: var(--muted);
+    margin: 14px 0 0;
+    max-width: 60ch;
+  }
+
+  .spec {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .spec th,
+  .spec td {
+    text-align: left;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.9375rem;
+    vertical-align: top;
+  }
+
+  .spec tr:last-child th,
+  .spec tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .spec th {
+    font-weight: 500;
+    color: var(--muted);
+    width: 170px;
+    white-space: nowrap;
+  }
+
+  .spec td .tag + .tag {
+    margin-left: 5px;
+  }
+
+  .snippet {
+    position: relative;
+    margin-top: 18px;
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    overflow-x: auto;
+  }
+
+  .snippet pre {
+    margin: 0;
+  }
+
+  .snippet code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.85;
+    color: #cfd8e6;
+    white-space: pre;
+  }
+
+  .snippet .copy {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+
+  .snippet .copy:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .gotchas {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .gotchas li {
+    background: var(--panel);
+    padding: 14px 18px;
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  .steps {
+    margin: 20px 0 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 10px;
+    color: var(--ink-soft);
+  }
+
+  .steps li::marker {
+    color: var(--pc);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .callout {
+    margin-top: 18px;
+    border-left: 3px solid var(--pc);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+  }
+
+  .faqs {
+    margin-top: 20px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  details {
+    background: var(--panel);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  details:last-child {
+    border-bottom: 0;
+  }
+
+  summary {
+    cursor: pointer;
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '+';
+    color: var(--faint);
+    font-family: var(--font-mono);
+  }
+
+  details[open] summary::after {
+    content: '-';
+  }
+
+  details p {
+    padding: 0 18px 16px;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    max-width: 66ch;
+  }
+
+  .guide-side {
+    position: sticky;
+    top: 20px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .side-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  .side-card .eyebrow {
+    margin-bottom: 14px;
+  }
+
+  .other-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .other-list a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    padding: 6px 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .other-list a:hover {
+    color: var(--ink);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--pc);
+    flex: none;
+  }
+
+  @media (max-width: 940px) {
+    .guide-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .guide-side {
+      position: static;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-scan]').forEach((form) =>
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = (form.querySelector('input') as HTMLInputElement).value.trim();
+      if (value) window.location.href = `/?url=${encodeURIComponent(value)}`;
+    }),
+  );
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      window.setTimeout(() => (btn.textContent = original), 1400);
+    }),
+  );
+</script>

@@ -1,0 +1,266 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Filled in by the deploy wizard once the Stripe products exist. Until then the
+// buttons say so rather than pretending to work.
+const STRIPE_API_LINK = import.meta.env.PUBLIC_STRIPE_API_LINK ?? '';
+---
+
+<Base
+  title="OGScope pricing: free preview checker, paid Open Graph image API"
+  description="The link preview checker is free with no account. Paid plans cover the Open Graph image API and scheduled monitoring."
+  path="/pricing"
+>
+  <section class="wrap head">
+    <p class="eyebrow">Pricing</p>
+    <h1>The checker is free. The API is not.</h1>
+    <p class="lede">
+      Checking a link costs us one page fetch, so there is no reason to put it behind a signup.
+      Generating images on demand costs real compute, so that part is paid.
+    </p>
+  </section>
+
+  <section class="wrap plans">
+    <article class="plan">
+      <h2>Checker</h2>
+      <p class="price">Free<span>forever</span></p>
+      <p class="plan-note">No account, no card, no limit worth mentioning.</p>
+      <ul>
+        <li>All eight platform previews</li>
+        <li>Full tag audit with copy-paste fixes</li>
+        <li>Image size, weight and format checks</li>
+        <li>Shareable result links</li>
+      </ul>
+      <a class="btn btn-ghost" href="/">Check a link</a>
+    </article>
+
+    <article class="plan plan-lead">
+      <h2>Image API</h2>
+      <p class="price">$12<span>per month</span></p>
+      <p class="plan-note">Generate social images from a URL instead of designing them by hand.</p>
+      <ul>
+        <li>10,000 images per month</li>
+        <li>Rendered at the edge, typically under 200ms</li>
+        <li>Templates with your own title, subtitle and colours</li>
+        <li>Cached and served as PNG, which every platform accepts</li>
+      </ul>
+      {
+        STRIPE_API_LINK ? (
+          <a class="btn" href={STRIPE_API_LINK}>Start with the API</a>
+        ) : (
+          <button class="btn" type="button" disabled>Checkout not connected yet</button>
+        )
+      }
+      <p class="try">
+        Try it with no account: <a href="/api/og?title=Hello%20from%20OGScope">render a sample image</a>
+      </p>
+    </article>
+
+    <article class="plan">
+      <h2>Monitoring</h2>
+      <p class="price">Soon<span>in development</span></p>
+      <p class="plan-note">
+        We re-check your pages on a schedule and email you when a deploy breaks a tag.
+      </p>
+      <ul>
+        <li>Daily checks on the URLs you pick</li>
+        <li>Alerts when a tag disappears or an image breaks</li>
+        <li>History of what changed and when</li>
+      </ul>
+      <a class="btn btn-ghost" href="mailto:hello@ogscope.app?subject=Monitoring%20waitlist">
+        Tell me when it ships
+      </a>
+    </article>
+  </section>
+
+  <section class="wrap faq-section">
+    <h2>Questions</h2>
+    <div class="faqs">
+      <details>
+        <summary>Why is the checker free?</summary>
+        <p>
+          One scan is a single page fetch and a small image request. It costs us a fraction of a cent,
+          and a signup wall would stop the people who need it most from ever using it.
+        </p>
+      </details>
+      <details>
+        <summary>Do you store the URLs I scan?</summary>
+        <p>
+          No. A scan runs, returns a result, and nothing is written down. There is no account to
+          attach it to and no database behind the checker.
+        </p>
+      </details>
+      <details>
+        <summary>What happens if I go over the API limit?</summary>
+        <p>
+          Requests past the limit return a 429 rather than a surprise invoice. You can upgrade at any
+          point in the month and the new limit applies immediately.
+        </p>
+      </details>
+      <details>
+        <summary>Can I cancel whenever I want?</summary>
+        <p>Yes. Cancel from the billing portal and the plan runs until the end of the period you paid for.</p>
+      </details>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-top: 64px;
+    max-width: 760px;
+  }
+
+  h1 {
+    margin: 12px 0 16px;
+    font-size: clamp(2rem, 4.6vw, 3.1rem);
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-1);
+    max-width: 56ch;
+    line-height: 1.55;
+  }
+
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 48px;
+    align-items: start;
+  }
+
+  .plan {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 24px 22px 26px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .plan-lead {
+    border-color: var(--ink);
+    box-shadow: var(--shadow-card);
+  }
+
+  .plan h2 {
+    font-size: var(--step-1);
+  }
+
+  .price {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin: 14px 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .price span {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--faint);
+    font-family: var(--font-mono);
+  }
+
+  .plan-note {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    min-height: 44px;
+  }
+
+  .plan ul {
+    list-style: none;
+    margin: 20px 0 24px;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .plan li {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .plan li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 2px;
+    background: var(--rule-strong);
+  }
+
+  .plan .btn {
+    width: 100%;
+  }
+
+  .try {
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--faint);
+    text-align: center;
+  }
+
+  .faq-section {
+    padding-top: 72px;
+    max-width: 760px;
+  }
+
+  .faqs {
+    margin-top: 22px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  details {
+    background: var(--panel);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  details:last-child {
+    border-bottom: 0;
+  }
+
+  summary {
+    cursor: pointer;
+    padding: 15px 18px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '+';
+    color: var(--faint);
+    font-family: var(--font-mono);
+  }
+
+  details[open] summary::after {
+    content: '-';
+  }
+
+  details p {
+    padding: 0 18px 16px;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    max-width: 68ch;
+  }
+</style>

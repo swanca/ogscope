@@ -1,0 +1,107 @@
+---
+import Base from '../layouts/Base.astro';
+import { USER_AGENT } from '../lib/scan';
+---
+
+<Base
+  title="OGScopeBot: what our crawler does"
+  description="OGScopeBot fetches a page only when someone asks for a scan. It reads the head, checks the social image, and stores nothing."
+  path="/bot"
+>
+  <section class="wrap doc">
+    <p class="eyebrow">Crawler</p>
+    <h1>About OGScopeBot</h1>
+    <p class="lede">
+      If you found this in your server logs, someone pasted one of your URLs into the checker. We
+      fetch a page only when a person asks us to, never on a schedule and never by crawling links.
+    </p>
+
+    <h2>How to identify it</h2>
+    <div class="snippet"><code>{USER_AGENT}</code></div>
+
+    <h2>What it requests</h2>
+    <ul>
+      <li>One GET for the page itself, capped at the first 512KB.</li>
+      <li>One ranged GET for the image named in your <span class="tag">og:image</span> tag, asking for the first 64KB so we can read its header without downloading the whole file.</li>
+      <li>Nothing else. We do not follow links, load scripts, or request other pages.</li>
+    </ul>
+
+    <h2>What it stores</h2>
+    <p>
+      Nothing. The result is built in memory and returned to the person who asked for it. There is no
+      database behind the checker and no record of which URLs were scanned.
+    </p>
+
+    <h2>Blocking it</h2>
+    <p>Add this to your robots.txt and we will stop fetching your pages:</p>
+    <div class="snippet"><code>User-agent: OGScopeBot<br />Disallow: /</code></div>
+    <p class="note">
+      Worth knowing before you do: blocking us does not change anything about how X, Facebook or
+      LinkedIn see your site, but it does mean nobody can check your previews with this tool.
+    </p>
+
+    <h2>Rate</h2>
+    <p>
+      One scan is two requests, triggered by one person pressing a button. There is no crawl budget to
+      worry about.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .doc {
+    padding: 56px 0 0;
+    max-width: 720px;
+  }
+
+  h1 {
+    margin: 12px 0 16px;
+    font-size: clamp(2rem, 4.4vw, 2.75rem);
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-1);
+    line-height: 1.55;
+  }
+
+  h2 {
+    font-size: var(--step-1);
+    margin-top: 40px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p {
+    margin-top: 14px;
+    color: var(--ink-soft);
+  }
+
+  .note {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
+  ul {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 9px;
+    color: var(--ink-soft);
+  }
+
+  .snippet {
+    margin-top: 16px;
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    overflow-x: auto;
+  }
+
+  .snippet code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: #cfd8e6;
+    line-height: 1.8;
+  }
+</style>

@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/api/*"],
+  "exclude": ["/_astro/*", "/fonts/*", "/favicon.svg", "/demo-card.svg", "/robots.txt"]
+}
